@@ -1,0 +1,117 @@
+:root {
+  --bg: #0f1115;
+  --panel: #131722;
+  --muted: #9aa4b2;
+  --line: #2a3142;
+  --accent: #6ea8fe;
+  --good: #4cd964;
+  --warn: #ffcc00;
+  --bad: #ff5e57;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  background: var(--bg);
+  color: #e8eefc;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial;
+}
+
+.panel {
+  padding: 16px;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--panel), #0e1320 90%);
+  overflow: auto;
+}
+
+.panel h1 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 1px solid var(--line);
+  background: #161b29;
+  color: #e8eefc;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:hover { border-color: var(--accent); }
+
+.group {
+  border-top: 1px dashed var(--line);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.group h2 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cdd6e6;
+  margin: 6px 0;
+}
+
+label input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.out {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 12px;
+}
+
+main {
+  display: grid;
+  place-items: center;
+  padding: 12px;
+}
+
+canvas#ecosystem {
+  width: 980px;
+  height: 680px;
+  background: #0d0f15;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.4);
+}
+
+#statsCanvas {
+  width: 260px;
+  height: 120px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #071018, #08121a);
+  border-radius: 6px;
+  display: block;
+}

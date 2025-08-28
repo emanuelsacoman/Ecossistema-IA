@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ecossistema com IA</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <aside class="panel">
+    <h1>Ecossistema com IA</h1>
+
+    <div class="row">
+      <button onclick="addHerbivore()">➕ Herbívoro</button>
+      <button onclick="addCarnivore()">➕ Carnívoro</button>
+      <button onclick="addPlant()">➕ Planta</button>
+    </div>
+
+    <div class="row">
+      <button onclick="startSim()">▶️ Iniciar</button>
+      <button onclick="stopSim()">⏸️ Pausar</button>
+      <button onclick="resetSim()">♻️ Reset</button>
+    </div>
+
+    <div class="group">
+      <label><input type="checkbox" id="showVision" checked /> Mostrar visão</label>
+      <label><input type="checkbox" id="showTargets" /> Mostrar alvos</label>
+    </div>
+
+    <div class="group">""
+      <h2>Comportamentos</h2>
+      <label><input type="checkbox" id="enableFlocking" checked /> Flocking (herbívoros)</label>
+      <label><input type="checkbox" id="enableTerritory" checked /> Territorialidade (carnívoros)</label>
+      <label><input type="checkbox" id="enableMemory" checked /> Memória curta (últ. comida)</label>
+      <label><input type="checkbox" id="enableSeason" checked /> Sazonalidade (estações)</label>
+    </div>
+
+    <div class="group">
+      <h2>Parâmetros</h2>
+      <label>
+        Regeneração de plantas (base, s⁻¹)
+        <input id="plantRegen" type="range" min="0" max="4" step="0.1" value="1.5" />
+        <span class="out" id="plantRegenOut">1.5</span>
+      </label>
+
+      <label>
+        Máx. de plantas
+        <input id="plantCap" type="range" min="0" max="600" step="10" value="300" />
+        <span class="out" id="plantCapOut">300</span>
+      </label>
+
+      <label>
+        Vel. base herbívoro
+        <input id="herbSpeed" type="range" min="0.2" max="3.5" step="0.1" value="1.6" />
+        <span class="out" id="herbSpeedOut">1.6</span>
+      </label>
+
+      <label>
+        Vel. base carnívoro
+        <input id="carnSpeed" type="range" min="0.2" max="4.5" step="0.1" value="2.2" />
+        <span class="out" id="carnSpeedOut">2.2</span>
+      </label>
+
+      <label>
+        Alcance de visão (px)
+        <input id="visionRange" type="range" min="20" max="240" step="5" value="120" />
+        <span class="out" id="visionRangeOut">120</span>
+      </label>
+
+      <label>
+        Taxa de custo energético
+        <input id="moveCost" type="range" min="0.01" max="0.6" step="0.01" value="0.12" />
+        <span class="out" id="moveCostOut">0.12</span>
+      </label>
+    </div>
+
+    <div class="group">
+      <h2>Spawns iniciais</h2>
+      <label>Herbívoros: <input id="initHerb" type="number" min="0" max="400" value="24" /></label>
+      <label>Carnívoros: <input id="initCarn" type="number" min="0" max="120" value="8" /></label>
+      <label>Plantas: <input id="initPlant" type="number" min="0" max="600" value="260" /></label>
+      <button onclick="applyInitialSpawn()">Aplicar</button>
+    </div>
+
+    <div class="group">
+      <h2>Mini-gráfico (últimos 120s)</h2>
+      <canvas id="statsCanvas" width="260" height="120"></canvas>
+      <p class="hint">Populações ao longo do tempo: <span id="popHint">—</span></p>
+    </div>
+
+    <p class="hint">
+      Dicas: ative/desative comportamentos para ver efeito. A sazonalidade altera regeneração de plantas ao longo do tempo.
+    </p>
+  </aside>
+
+  <main>
+    <canvas id="ecosystem" width="980" height="680"></canvas>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
