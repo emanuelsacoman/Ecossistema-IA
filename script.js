@@ -104,6 +104,8 @@ class Animal {
   constructor(x,y, type, genes={}){
     this.type = type;
     this.x = x; this.y = y;
+    this.energy = type === SPECIES.CARN ? 120 : 100;
+    this.state = "andando";
 
     const baseSpeed = type===SPECIES.HERB ? parseFloat(ui.herbSpeed.value) : parseFloat(ui.carnSpeed.value);
     const vision = parseFloat(ui.visionRange.value);
@@ -275,6 +277,16 @@ class Animal {
 
   act(dt) {
     this.decide(dt);
+
+    // === Estados extras de descanso ===
+    if (this.type === SPECIES.CARN) {
+      if (this.energy > 130 && this.state !== "rest") {
+        this.state = "rest"; // descansa se está bem alimentado
+      } else if (this.energy < 90 && this.state === "rest") {
+        this.state = "seek_food"; // volta a caçar se energia cair
+      }
+    }
+
 
     // flocking for herbivores
     if (this.type === SPECIES.HERB && ui.enableFlocking.checked) {
@@ -450,6 +462,19 @@ class Animal {
       ctx.stroke();
       ctx.setLineDash([]);
     }
+
+    // popup de debug (opcional via checkbox)
+    if (document.getElementById("showDebug")?.checked) {
+      ctx.fillStyle = "white";
+      ctx.font = "10px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        `${this.type === SPECIES.CARN ? "Carnívoro" : "Herbívoro"} | E:${Math.round(this.energy)} | ${this.state}`,
+        this.x,
+        this.y - this.radius - 14
+      );
+    }
+
   }
 
   isDead(){
