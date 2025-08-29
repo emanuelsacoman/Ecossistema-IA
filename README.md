@@ -1,3 +1,3 @@
 # ECOSSISTEMA COM IA 🌎🤖
 
-![alt text](image.png)
+![alt text](./images/wallpaper.png)
