@@ -147,90 +147,96 @@ class Animal {
   }
 
   decide(dt) {
-    const {seenPlants, seenHerb, seenCarn} = this.perceive();
+  const {seenPlants, seenHerb, seenCarn} = this.perceive();
 
-    // update memory if saw food
-    if (ui.enableMemory.checked) {
-      if (this.type === SPECIES.HERB && seenPlants.length) {
-        const p = seenPlants[0];
-        this.memory.lastFoodPos = {x: p.x, y: p.y}; this.memory.lastFoodSeenAt = world.time;
-      }
-      if (this.type === SPECIES.CARN && seenHerb.length) {
-        const h = seenHerb[0];
-        this.memory.lastFoodPos = {x: h.x, y: h.y}; this.memory.lastFoodSeenAt = world.time;
-      }
+  // helper para encontrar alvo mais próximo
+  const nearest = (arr)=> {
+    let best=null, bestD=Infinity;
+    for(const t of arr){
+      const d=dist2(this,t);
+      if(d<bestD){bestD=d; best=t;}
+    }
+    return [best, Math.sqrt(bestD)];
+  };
+
+  const hunger = 1 - clamp(this.energy/150, 0, 1);
+  const ageFactor = clamp(this.age/this.maxAge, 0, 1);
+  const fear = this.type===SPECIES.HERB ? clamp(seenCarn.length / 3, 0, 1) : 0;
+  const canMate = (this.energy > 120 && this.mateCooldown <= 0 && this.age > 8);
+
+  let scores = { wander: 0.1, seek_food: 0, flee: 0, mate: 0, rest: 0, patrol: 0 };
+
+  if (this.type===SPECIES.HERB) {
+    const [plant, plantDist] = nearest(seenPlants);
+
+    // atualizar memória se viu planta
+    if (ui.enableMemory.checked && plant) {
+      this.memory.lastFoodPos = {x: plant.x, y: plant.y};
+      this.memory.lastFoodSeenAt = world.time;
     }
 
-    const hunger = 1 - clamp(this.energy/150, 0, 1);
-    const ageFactor = clamp(this.age/this.maxAge, 0, 1);
-    const fear = this.type===SPECIES.HERB ? clamp(seenCarn.length / 3, 0, 1) : 0;
-    const canMate = (this.energy > 120 && this.mateCooldown <= 0 && this.age > 8);
-
-    const nearest = (arr)=> {
-      let best=null, bestD=Infinity;
-      for(const t of arr){
-        const d=dist2(this,t);
-        if(d<bestD){bestD=d; best=t;}
-      }
-      return [best, Math.sqrt(bestD)];
-    };
-
-    let scores = { wander: 0.1, seek_food: 0, flee: 0, mate: 0, rest: 0, patrol: 0 };
-
-    if (this.type===SPECIES.HERB) {
-      const [plant, plantDist] = nearest(seenPlants);
-      if (plant) {
-        const prox = clamp(1 - (plantDist / (this.genes.vision+1)), 0, 1);
-        scores.seek_food = hunger * (0.6 + 0.4*prox);
-        this.target = plant;
-      } else if (ui.enableMemory.checked && this.memory.lastFoodPos && (world.time - this.memory.lastFoodSeenAt) < 15) {
-        // if memory recently has food, go there
-        scores.seek_food = 0.35 * hunger;
-        this.target = {x: this.memory.lastFoodPos.x, y: this.memory.lastFoodPos.y, radius: 6};
-      } else {
-        scores.seek_food = 0.25*hunger;
-        this.target = null;
-      }
-      scores.flee = fear * 1.2;
+    if (plant) {
+      const prox = clamp(1 - (plantDist / (this.genes.vision+1)), 0, 1);
+      scores.seek_food = hunger * (0.6 + 0.4*prox);
+      this.target = plant;
+    } else if (ui.enableMemory.checked && this.memory.lastFoodPos && (world.time - this.memory.lastFoodSeenAt) < 15) {
+      scores.seek_food = 0.35 * hunger;
+      this.target = {x: this.memory.lastFoodPos.x, y: this.memory.lastFoodPos.y, radius: 6};
     } else {
-      // carnívoro
-      const [prey, preyDist] = nearest(seenHerb);
-      if (prey) {
-        const prox = clamp(1 - (preyDist / (this.genes.vision+1)), 0, 1);
-        scores.seek_food = hunger * (0.6 + 0.6*prox);
-        this.target = prey;
-      } else if (ui.enableMemory.checked && this.memory.lastFoodPos && (world.time - this.memory.lastFoodSeenAt) < 20) {
-        scores.seek_food = 0.3 * hunger;
-        this.target = {x: this.memory.lastFoodPos.x, y: this.memory.lastFoodPos.y, radius: 8};
+      scores.seek_food = 0.25*hunger;
+      this.target = null;
+    }
+
+    scores.flee = fear * 1.2;
+
+  } else {
+    // carnívoro
+    const [prey, preyDist] = nearest(seenHerb);
+
+    // atualizar memória se viu presa
+    if (ui.enableMemory.checked && prey) {
+      this.memory.lastFoodPos = {x: prey.x, y: prey.y};
+      this.memory.lastFoodSeenAt = world.time;
+    }
+
+    if (prey) {
+      const prox = clamp(1 - (preyDist / (this.genes.vision+1)), 0, 1);
+      scores.seek_food = hunger * (0.6 + 0.6*prox);
+      this.target = prey;
+    } else if (ui.enableMemory.checked && this.memory.lastFoodPos && (world.time - this.memory.lastFoodSeenAt) < 20) {
+      scores.seek_food = 0.3 * hunger;
+      this.target = {x: this.memory.lastFoodPos.x, y: this.memory.lastFoodPos.y, radius: 8};
+    } else {
+      scores.seek_food = 0.25*hunger;
+      this.target = null;
+      scores.wander += 0.25; // 👈 patrulhar mais quando sem presa
+    }
+
+    // território
+    if (ui.enableTerritory.checked && this.territory) {
+      const dx = this.x - this.territory.cx, dy = this.y - this.territory.cy;
+      const d = Math.hypot(dx,dy);
+      if (d > this.territory.radius * 0.9) {
+        scores.patrol = 0.6 + (d / (this.territory.radius+1));
       } else {
-        scores.seek_food = 0.25*hunger;
-        this.target = null;
+        scores.patrol = 0.05;
       }
-
-      // territory incentive
-      if (ui.enableTerritory.checked && this.territory) {
-        const dx = this.x - this.territory.cx, dy = this.y - this.territory.cy;
-        const d = Math.hypot(dx,dy);
-        // if outside territory, strong desire to go back (patrol)
-        if (d > this.territory.radius * 0.9) {
-          scores.patrol = 0.6 + (d / (this.territory.radius+1));
-        } else {
-          scores.patrol = 0.05;
-        }
-      } else scores.patrol = 0;
     }
-
-    scores.mate = canMate ? 0.45 * (1 - hunger) * (1 - ageFactor) : 0;
-    scores.rest = clamp((ageFactor*0.6) + (hunger*0.2), 0, 0.9);
-    scores.wander += (0.15 + Math.random()*0.05);
-
-    // choose best
-    let bestState = "wander", bestScore = -Infinity;
-    for (const [k,v] of Object.entries(scores)) {
-      if (v > bestScore) { bestScore = v; bestState = k; }
-    }
-    this.state = bestState;
   }
+
+  // mating, resting, wander natural
+  scores.mate = canMate ? 0.45 * (1 - hunger) * (1 - ageFactor) : 0;
+  scores.rest = clamp((ageFactor*0.6) + (hunger*0.2), 0, 0.9);
+  scores.wander += (0.15 + Math.random()*0.05);
+
+  // escolher melhor estado
+  let bestState = "wander", bestScore = -Infinity;
+  for (const [k,v] of Object.entries(scores)) {
+    if (v > bestScore) { bestScore = v; bestState = k; }
+  }
+  this.state = bestState;
+}
+
 
   steeringForFlocking(neighbors) {
     // neighbors: array of other herbivores within some radius
@@ -282,6 +288,26 @@ class Animal {
     // behaviors
     if (this.state === "seek_food" && this.target) {
       this.steerTowards(this.target.x, this.target.y, 0.16);
+      if (this.type === SPECIES.CARN) {
+        const allies = world.agents.filter(
+          a => a !== this && a.type === SPECIES.CARN && dist2(this,a) < 80*80
+        );
+        if (allies.length) {
+          let avgVx=0, avgVy=0, cx=0, cy=0;
+          for (const ally of allies) {
+            avgVx += ally.vx; avgVy += ally.vy;
+            cx += ally.x; cy += ally.y;
+          }
+          avgVx/=allies.length; avgVy/=allies.length;
+          cx/=allies.length; cy/=allies.length;
+
+          // leve atração ao centro do grupo
+          this.steerTowards(cx, cy, 0.05);
+          // alinhar velocidade com o grupo
+          this.vx += (avgVx - this.vx)*0.04;
+          this.vy += (avgVy - this.vy)*0.04;
+        }
+      }
     } else if (this.state === "flee") {
       const threats = world.agents.filter(a=>a.type===SPECIES.CARN && dist2(this,a) <= this.genes.vision*this.genes.vision);
       if (threats.length) {
@@ -598,6 +624,17 @@ function drawStats(){
 applyInitialSpawn();
 requestAnimationFrame((ts)=>{ world.lastTs = ts; step(ts); });
 
-// make canvas size responsive to declared pixels
-canvas.width = 980; canvas.height = 680;
-statsCanvas.width = 260; statsCanvas.height = 120;
+// ======= Responsividade =======
+function resizeCanvas() {
+  const panelWidth = document.querySelector(".panel")?.offsetWidth || 300;
+  canvas.width = window.innerWidth - panelWidth;
+  canvas.height = window.innerHeight;
+  world.width = canvas.width;
+  world.height = canvas.height;
+
+  statsCanvas.width = 260;
+  statsCanvas.height = 120;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
