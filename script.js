@@ -313,7 +313,8 @@ class Animal {
       this.vx *= 0.94; this.vy *= 0.94;
     } else {
       // wander
-      this.vx += rand(-0.05,0.05); this.vy += rand(-0.05,0.05);
+      this.vx += rand(-0.05,0.05);
+      this.vy += rand(-0.05,0.05);
     }
 
     // limit speed
