@@ -2,110 +2,170 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Ecossistema com IA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecossistema Artificial</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <aside class="panel">
-    <h1>Ecossistema com IA</h1>
+  <div class="app-shell">
+    <aside class="control-panel" aria-label="Painel da simulação">
+      <header class="panel-header">
+        <div>
+          <p class="eyebrow">Simulação Canvas</p>
+          <h1>Ecossistema Artificial</h1>
+        </div>
+        <span id="runState" class="run-state" data-state="running">Rodando</span>
+      </header>
 
-    <div class="row">
-      <button onclick="addHerbivore()">➕ Herbívoro</button>
-      <button onclick="addCarnivore()">➕ Carnívoro</button>
-      <button onclick="addPlant()">➕ Planta</button>
-    </div>
+      <section class="panel-section controls">
+        <div class="button-grid">
+          <button id="startBtn" type="button">Iniciar</button>
+          <button id="pauseBtn" type="button">Pausar</button>
+          <button id="stepBtn" type="button">Step</button>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
 
-    <div class="row">
-      <button onclick="startSim()">▶️ Iniciar</button>
-      <button onclick="stopSim()">⏸️ Pausar</button>
-      <button onclick="resetSim()">♻️ Reset</button>
-    </div>
+        <label class="field">
+          <span>Preset</span>
+          <select id="presetSelect"></select>
+        </label>
 
-    <div class="group">
-      <label><input type="checkbox" id="showVision" checked /> Mostrar visão</label>
-      <label><input type="checkbox" id="showTargets" /> Mostrar alvos</label>
-    </div>
+        <div class="seed-row">
+          <label class="field seed-field">
+            <span>Seed</span>
+            <input id="seedInput" type="text" autocomplete="off" />
+          </label>
+          <button id="applySeedBtn" type="button">Aplicar</button>
+          <button id="randomSeedBtn" type="button">Nova</button>
+        </div>
+      </section>
 
-    <div class="group">
-      <h2>Comportamentos</h2>
-      <label><input type="checkbox" id="enableFlocking" checked /> Flocking (herbívoros)</label>
-      <label><input type="checkbox" id="enableTerritory" checked /> Territorialidade (carnívoros)</label>
-      <label><input type="checkbox" id="enableMemory" checked /> Memória curta (últ. comida)</label>
-      <label><input type="checkbox" id="enableSeason" checked /> Sazonalidade (estações)</label>
-    </div>
+      <section class="panel-section">
+        <h2>Parâmetros</h2>
+        <label class="range-field">
+          <span>Velocidade</span>
+          <output id="timeScaleOut"></output>
+          <input id="timeScale" type="range" min="0.1" max="8" step="0.1" value="1" />
+        </label>
+        <label class="range-field">
+          <span>Movimento animal</span>
+          <output id="animalSpeedOut"></output>
+          <input id="animalSpeed" type="range" min="0.45" max="1.9" step="0.05" value="1" />
+        </label>
+        <label class="range-field">
+          <span>Custo energético</span>
+          <output id="energyCostOut"></output>
+          <input id="energyCost" type="range" min="0.45" max="1.9" step="0.05" value="1" />
+        </label>
+        <label class="range-field">
+          <span>Crescimento vegetal</span>
+          <output id="plantGrowthOut"></output>
+          <input id="plantGrowth" type="range" min="0.3" max="2.2" step="0.05" value="1" />
+        </label>
+        <label class="range-field">
+          <span>Regeneração</span>
+          <output id="plantRegenOut"></output>
+          <input id="plantRegen" type="range" min="0" max="8" step="0.1" value="2.6" />
+        </label>
+        <label class="range-field">
+          <span>Limite de plantas</span>
+          <output id="plantCapOut"></output>
+          <input id="plantCap" type="range" min="150" max="3000" step="25" value="1250" />
+        </label>
+        <label class="range-field">
+          <span>Escala de visão</span>
+          <output id="visionScaleOut"></output>
+          <input id="visionScale" type="range" min="0.45" max="1.7" step="0.05" value="1" />
+        </label>
+        <label class="range-field">
+          <span>Mutação genética</span>
+          <output id="mutationRateOut"></output>
+          <input id="mutationRate" type="range" min="0" max="0.35" step="0.01" value="0.12" />
+        </label>
+        <label class="range-field">
+          <span>Ritmo de vida</span>
+          <output id="lifeSpeedOut"></output>
+          <input id="lifeSpeed" type="range" min="0.4" max="2.4" step="0.05" value="1" />
+        </label>
+      </section>
 
-    <div class="group">
-      <h2>Debug</h2>
-      <label>
-        <input type="checkbox" id="showDebug" />
-        Mostrar informações dos animais
-      </label>
-    </div>
+      <section class="panel-section">
+        <h2>Sistemas</h2>
+        <div class="toggle-grid">
+          <label><input id="enableFlocking" type="checkbox" checked /> Flocking</label>
+          <label><input id="enableTerritory" type="checkbox" checked /> Território</label>
+          <label><input id="enableMemory" type="checkbox" checked /> Memória</label>
+          <label><input id="showBiomes" type="checkbox" checked /> Biomas</label>
+          <label><input id="showVision" type="checkbox" /> Visão</label>
+          <label><input id="showTargets" type="checkbox" checked /> Alvos</label>
+          <label><input id="showDebug" type="checkbox" /> Debug</label>
+          <label><input id="showGrid" type="checkbox" /> Grid</label>
+        </div>
+      </section>
 
+      <section class="panel-section">
+        <h2>Spawns</h2>
+        <div class="spawn-actions">
+          <button id="addPlantBtn" type="button">+25 plantas</button>
+          <button id="addHerbivoreBtn" type="button">+8 herbívoros</button>
+          <button id="addCarnivoreBtn" type="button">+3 carnívoros</button>
+        </div>
+      </section>
 
-    <div class="group">
-      <h2>Parâmetros</h2>
-      <label>
-        Regeneração de plantas (base, s⁻¹)
-        <input id="plantRegen" type="range" min="0" max="4" step="0.1" value="1.5" />
-        <span class="out" id="plantRegenOut">1.5</span>
-      </label>
+      <section class="panel-section">
+        <h2>Ambiente</h2>
+        <div class="stat-grid compact">
+          <div><span>Tempo</span><strong id="envTime">00:00</strong></div>
+          <div><span>Estação</span><strong id="envSeason">Primavera</strong></div>
+          <div><span>Clima</span><strong id="envWeather">Claro</strong></div>
+          <div><span>Luz</span><strong id="envLight">100%</strong></div>
+          <div><span>Temp.</span><strong id="envTemp">65%</strong></div>
+          <div><span>Umidade</span><strong id="envMoisture">55%</strong></div>
+        </div>
+      </section>
 
-      <label>
-        Máx. de plantas
-        <input id="plantCap" type="range" min="0" max="600" step="10" value="300" />
-        <span class="out" id="plantCapOut">300</span>
-      </label>
+      <section class="panel-section">
+        <h2>População</h2>
+        <div class="stat-grid">
+          <div><span>Plantas</span><strong id="statPlants">0</strong></div>
+          <div><span>Maduras</span><strong id="statMaturePlants">0</strong></div>
+          <div><span>Herbívoros</span><strong id="statHerbivores">0</strong></div>
+          <div><span>Carnívoros</span><strong id="statCarnivores">0</strong></div>
+          <div><span>Biomassa</span><strong id="statBiomass">0</strong></div>
+          <div><span>Energia média</span><strong id="statEnergy">0%</strong></div>
+          <div><span>Nascimentos</span><strong id="statBirths">0</strong></div>
+          <div><span>Mortes</span><strong id="statDeaths">0</strong></div>
+          <div><span>Caçadas</span><strong id="statPredations">0</strong></div>
+          <div><span>Grid A/P</span><strong id="statGrid">0/0</strong></div>
+        </div>
+        <canvas id="statsCanvas" width="320" height="140" aria-label="Gráfico populacional"></canvas>
+      </section>
 
-      <label>
-        Vel. base herbívoro
-        <input id="herbSpeed" type="range" min="0.2" max="3.5" step="0.1" value="1.6" />
-        <span class="out" id="herbSpeedOut">1.6</span>
-      </label>
+      <section class="panel-section inspector">
+        <div class="section-row">
+          <h2>Inspetor</h2>
+          <div class="mini-actions">
+            <button id="followBtn" type="button" disabled>Follow</button>
+            <button id="clearFollowBtn" type="button">Soltar</button>
+          </div>
+        </div>
+        <div id="inspectorBody" class="inspector-body">
+          <p class="empty-state">Clique em uma entidade no canvas.</p>
+        </div>
+      </section>
 
-      <label>
-        Vel. base carnívoro
-        <input id="carnSpeed" type="range" min="0.2" max="4.5" step="0.1" value="2.2" />
-        <span class="out" id="carnSpeedOut">2.2</span>
-      </label>
+      <section class="panel-section">
+        <h2>Eventos</h2>
+        <ol id="eventLog" class="event-log"></ol>
+      </section>
+    </aside>
 
-      <label>
-        Alcance de visão (px)
-        <input id="visionRange" type="range" min="20" max="240" step="5" value="120" />
-        <span class="out" id="visionRangeOut">120</span>
-      </label>
+    <main class="simulation-view">
+      <canvas id="ecosystem" aria-label="Canvas da simulação"></canvas>
+    </main>
+  </div>
 
-      <label>
-        Taxa de custo energético
-        <input id="moveCost" type="range" min="0.01" max="0.6" step="0.01" value="0.12" />
-        <span class="out" id="moveCostOut">0.12</span>
-      </label>
-    </div>
-
-    <div class="group">
-      <h2>Spawns iniciais</h2>
-      <label>Herbívoros: <input id="initHerb" type="number" min="0" max="400" value="24" /></label>
-      <label>Carnívoros: <input id="initCarn" type="number" min="0" max="120" value="8" /></label>
-      <label>Plantas: <input id="initPlant" type="number" min="0" max="600" value="260" /></label>
-      <button onclick="applyInitialSpawn()">Aplicar</button>
-    </div>
-
-    <div class="group">
-      <h2>Mini-gráfico (últimos 120s)</h2>
-      <canvas id="statsCanvas" width="260" height="120"></canvas>
-      <p class="hint">Populações ao longo do tempo: <span id="popHint">—</span></p>
-    </div>
-
-    <p class="hint">
-      Dicas: ative/desative comportamentos para ver efeito. A sazonalidade altera regeneração de plantas ao longo do tempo.
-    </p>
-  </aside>
-
-  <main>
-    <canvas id="ecosystem"></canvas>
-  </main>
-
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
+
